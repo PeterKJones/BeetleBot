@@ -1,9 +1,11 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BeetleBot.Modules
@@ -16,24 +18,55 @@ namespace BeetleBot.Modules
 
             
             IReadOnlyCollection<Discord.Rest.RestMessage> x = await Context.Channel.GetPinnedMessagesAsync();
-            await ReplyAsync("Number of pinned messages in " + Context.Channel.Name + " is " + x.Count.ToString());
-            foreach (Discord.Rest.RestMessage msg in x)
-            {
-                if (msg.Attachments.Count > 0)
+            //await ReplyAsync("Number of pinned messages in " + Context.Channel.Name + " is " + x.Count.ToString());
+            ulong id = 587398586870792205;
+            var otherchannel = Context.Client.GetChannel(id) as IMessageChannel;
+            //587350112536100884
+            var cmdUser = Context.User as SocketGuildUser;
+            var role = (cmdUser as IGuildUser).Guild.Roles.FirstOrDefault(curRole => curRole.Name == "Admin");
+            if (cmdUser.Roles.Contains(role))
+                foreach (Discord.Rest.RestMessage msg in x)
                 {
-                    foreach (Discord.Attachment at in msg.Attachments)
+                    if (msg.Attachments.Count > 0) //for specifically attachments.
                     {
-                        WebClient saveFile = new WebClient();
-                        string fileName = Path.GetFileName(at.Url);
+                        foreach (Attachment at in msg.Attachments)
+                        {
+                            try
+                            {
+                                string fileName = Path.GetFileName(at.Url);
+                                string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+
+                                SaveFile(at.Url, filePath);
+
+                                await otherchannel.SendMessageAsync(at.Filename);
+                                await otherchannel.SendFileAsync(filePath);
+                                File.Delete(filePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                            }
+                        }
+                        await msg.DeleteAsync();
+                    }
+
+                    if (msg.ToString().ToLower().EndsWith(".jpg") || msg.ToString().ToLower().EndsWith(".png") || msg.ToString().ToLower().EndsWith(".jpeg"))
+                    {
+                        string fileName = Path.GetFileName(msg.ToString());
                         string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
-                        saveFile.DownloadFile(at.Url, filePath);
-                        
-                        await ReplyAsync(at.Filename);
-                        //await ReplyAsync(at.Url);
-                        await Context.Channel.SendFileAsync(filePath);
+                        await otherchannel.SendMessageAsync(fileName);
+                        await otherchannel.SendMessageAsync(msg.ToString());
+                        await msg.DeleteAsync();
                     }
                 }
-            }
+            else
+                await ReplyAsync(Context.User.Username + ", you do not have permission to use this command.");
+        }
+
+        private void SaveFile(string source, string dest)
+        {
+            WebClient saveFile = new WebClient();
+            saveFile.DownloadFile(source, dest);
         }
     }
 }
