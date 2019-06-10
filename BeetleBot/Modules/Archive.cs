@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace BeetleBot.Modules
 {
-    public class Pic : ModuleBase<SocketCommandContext>
+    public class Archive : ModuleBase<SocketCommandContext>
     {
-        [Command("pic")]
+        [Command("archive")]
         public async Task PicAsync()
         {
 
@@ -21,7 +21,6 @@ namespace BeetleBot.Modules
             //await ReplyAsync("Number of pinned messages in " + Context.Channel.Name + " is " + x.Count.ToString());
             ulong id = 587398586870792205;
             var otherchannel = Context.Client.GetChannel(id) as IMessageChannel;
-            //587350112536100884
             var cmdUser = Context.User as SocketGuildUser;
             var role = (cmdUser as IGuildUser).Guild.Roles.FirstOrDefault(curRole => curRole.Name == "Admin");
             if (cmdUser.Roles.Contains(role))
@@ -52,6 +51,7 @@ namespace BeetleBot.Modules
 
                     if (msg.ToString().ToLower().EndsWith(".jpg") || msg.ToString().ToLower().EndsWith(".png") || msg.ToString().ToLower().EndsWith(".jpeg"))
                     {
+                        //There could potentially be multiple images in one message. This needs to be parsed(most likely with regex)
                         string fileName = Path.GetFileName(msg.ToString());
                         string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
                         await otherchannel.SendMessageAsync(fileName);
