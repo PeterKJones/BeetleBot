@@ -17,7 +17,6 @@ namespace BeetleBot
         private DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
-        public List<Archive> archiveList = new List<Archive>();
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -36,7 +35,7 @@ namespace BeetleBot
             
             //event subscriptions
             client.Log += Log;
-            LoadArchiveConfig();
+            //LoadArchiveConfig();
             await RegisterCommandsAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
@@ -73,41 +72,6 @@ namespace BeetleBot
                 if (!result.IsSuccess)
                     Console.WriteLine(result.ErrorReason);
             }
-        }
-
-        public void AddArchive(Archive archive)
-        {
-            if (!archiveList.Contains(archive))
-            {
-                archiveList.Add(archive);
-                XmlSerializer archiveXML = new XmlSerializer(typeof(List<Archive>));
-                TextWriter tw = new StreamWriter(Directory.GetCurrentDirectory() + "\\config.xml");
-                archiveXML.Serialize(tw, archiveList);
-                tw.Close();
-            }
-
-        }
-
-        public void RemoveArchive(Archive archive)
-        {
-            if (archiveList.Contains(archive))
-            {
-                archiveList.Remove(archive);
-                XmlSerializer archiveXML = new XmlSerializer(typeof(List<Archive>));
-                TextWriter tw = new StreamWriter(Directory.GetCurrentDirectory() + "\\config.xml");
-                archiveXML.Serialize(tw, archiveList);
-            }
-        }
-
-        private void LoadArchiveConfig()
-        {
-            string dir = Directory.GetCurrentDirectory() + "\\config.xml";
-            if (Directory.Exists(dir))
-                using (var sr = new StreamReader(dir))
-                {
-                    XmlSerializer archiveXML = new XmlSerializer(typeof(List<Archive>));
-                    archiveList = (List<Archive>)archiveXML.Deserialize(sr);
-                }
         }
     }
 }

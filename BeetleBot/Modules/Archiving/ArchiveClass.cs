@@ -6,7 +6,8 @@ using System.Xml.Serialization;
 
 namespace BeetleBot.Modules.Archiving
 {
-    public class Archive : Program
+    [Serializable]
+    public class Archive
     {
         private ulong sourceID { get; set; }
         private ulong destID { get; set; }
