@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
+using System.Xml.Serialization;
+using System.Collections.Generic;
+using System.IO;
+using BeetleBot.Modules.Archiving;
 
 namespace BeetleBot
 {
-    class Program
+    public class Program
     {
         private DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
+        public List<Archive> archiveList = new List<Archive>();
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -28,14 +32,14 @@ namespace BeetleBot
                 .BuildServiceProvider();
 
             string botToken = "NTg3MTY0NjI0MTUyMDM1Mzc1.XP1dBg.95bdsohUdxW9OiL65ffitq1ovPg";
-
+            
+            
             //event subscriptions
             client.Log += Log;
-
+            LoadArchiveConfig();
             await RegisterCommandsAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
-            //client.MessageReceived += Client_MessageReceived;
 
             await Task.Delay(-1);
         }
@@ -60,16 +64,50 @@ namespace BeetleBot
                 return;
 
             int argPos = 0;
-
+            
             if (message.HasStringPrefix("!", ref argPos) || message.HasMentionPrefix(client.CurrentUser, ref argPos))
             {
                 var context = new SocketCommandContext(client, message);
-
                 var result = await commands.ExecuteAsync(context, argPos, services);
 
                 if (!result.IsSuccess)
                     Console.WriteLine(result.ErrorReason);
             }
+        }
+
+        public void AddArchive(Archive archive)
+        {
+            if (!archiveList.Contains(archive))
+            {
+                archiveList.Add(archive);
+                XmlSerializer archiveXML = new XmlSerializer(typeof(List<Archive>));
+                TextWriter tw = new StreamWriter(Directory.GetCurrentDirectory() + "\\config.xml");
+                archiveXML.Serialize(tw, archiveList);
+                tw.Close();
+            }
+
+        }
+
+        public void RemoveArchive(Archive archive)
+        {
+            if (archiveList.Contains(archive))
+            {
+                archiveList.Remove(archive);
+                XmlSerializer archiveXML = new XmlSerializer(typeof(List<Archive>));
+                TextWriter tw = new StreamWriter(Directory.GetCurrentDirectory() + "\\config.xml");
+                archiveXML.Serialize(tw, archiveList);
+            }
+        }
+
+        private void LoadArchiveConfig()
+        {
+            string dir = Directory.GetCurrentDirectory() + "\\config.xml";
+            if (Directory.Exists(dir))
+                using (var sr = new StreamReader(dir))
+                {
+                    XmlSerializer archiveXML = new XmlSerializer(typeof(List<Archive>));
+                    archiveList = (List<Archive>)archiveXML.Deserialize(sr);
+                }
         }
     }
 }

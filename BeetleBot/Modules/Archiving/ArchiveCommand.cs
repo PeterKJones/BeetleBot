@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace BeetleBot.Modules
 {
-    public class Archive : ModuleBase<SocketCommandContext>
+    public class ArchiveCommand : ModuleBase<SocketCommandContext>
     {
         [Command("archive")]
         public async Task PicAsync()
