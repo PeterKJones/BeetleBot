@@ -16,9 +16,18 @@ namespace BeetleBot.Modules.Archiving
         [Command("addarchive")]
         public async Task AddArchiveAsync(ITextChannel sourceChan, ITextChannel destChan)
         {
-            Archive archive = new Archive(sourceChan.Id, destChan.Id, archiveList);
-            archive.AddArchive(); //Using custom method rather than the list add because it checks for more logic.
-            await ReplyAsync("Now archiving " + sourceChan.Name + " to " + destChan.Name);
+            Archive archive = new Archive(sourceChan.Name,sourceChan.Id, destChan.Name, destChan.Id);
+            int added = archive.AddArchive(); //Using custom method rather than the list add because it checks for more logic.
+            switch (added)
+            {
+                case 0:
+                    await ReplyAsync("Now archiving " + sourceChan.Name + " to " + destChan.Name);
+                    archive.SaveArchive();
+                    break;
+                case 1:
+                    await ReplyAsync("Archive rule already established for " + sourceChan.Name + " and " + destChan.Name);
+                    break;
+            }
         }
 
 

@@ -17,6 +17,8 @@ namespace BeetleBot
         private CommandService commands;
         private IServiceProvider services;
         public static List<Archive> archiveList = new List<Archive>();
+        public static string configFile = Directory.GetCurrentDirectory() + "\\config.conf";
+
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -34,7 +36,7 @@ namespace BeetleBot
             
             //event subscriptions
             client.Log += Log;
-            //LoadArchiveConfig();
+            LoadArchiveConfig();
             await RegisterCommandsAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
@@ -73,16 +75,27 @@ namespace BeetleBot
             }
         }
 
-        private List<Archive> LoadArchiveConfig()
+        private void LoadArchiveConfig()
         {
-            string dir = Directory.GetCurrentDirectory() + "\\config.conf";
-            if (Directory.Exists(dir))
-            {
-                //NYI
-            }
+            if (File.Exists(configFile))
+                using (StreamReader sr = File.OpenText(configFile))
+                {
+                    string s = "";
+                    while ((s = sr.ReadLine()) != null)
+                    {
+                        string[] entries = s.Split('|');
+                        if (entries[0].Equals("Archive"))
+                        {
+                            Archive archive = new Archive(entries[1], ulong.Parse(entries[2]), entries[3], ulong.Parse(entries[4]));
+                            archive.AddArchive();
+                        }
+                    }
+                }
             else
-                File.Create(dir);
-            return new List<Archive>();
+            {
+                using (StreamWriter sw = new StreamWriter(configFile))
+                    sw.WriteLine("Beetlebot Configuration File - Date: " + DateTime.Now.ToString("dddd, dd MMMM yyyy hh:mm:sstt"));
+            }
         }
     }
 }

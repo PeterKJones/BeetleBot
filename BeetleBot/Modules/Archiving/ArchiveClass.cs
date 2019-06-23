@@ -13,33 +13,55 @@ namespace BeetleBot.Modules.Archiving
         public string destName;
         public ulong sourceID;
         public ulong destID;
-        private List<Archive> archiveList;
         private string saveString;
         public Archive() { }
 
-        public Archive(ulong sourceID, ulong destID, List<Archive> archiveList)
+        public Archive(string sourceName, ulong sourceID, string destName, ulong destID)
         {
+            this.sourceName = sourceName;
             this.sourceID = sourceID;
+            this.destName = destName;
             this.destID = destID;
-            this.archiveList = archiveList;
             saveString = className + '|' + sourceName + '|' + sourceID + '|' + destName + '|' + destID;
         }
 
-        public void AddArchive()
+        public int AddArchive()
         {
-            if (!archiveList.Contains(this))
+            if (!isOnList())
             {
-                archiveList.Add(this);
-            }
+                Program.archiveList.Add(this);
+                return 0;
+            } 
+            return 1;
+        }
 
+        public int SaveArchive()
+        {
+            if (isOnList())
+            {
+                using (StreamWriter sw = File.AppendText(Program.configFile))
+                    sw.WriteLine(saveString);
+                return 0;
+            }
+            return 1;
         }
 
         public void RemoveArchive()
         {
-            if (archiveList.Contains(this))
+            if (Program.archiveList.Contains(this))
             {
-                archiveList.Remove(this);
+                Program.archiveList.Remove(this);
             }
+        }
+
+        private bool isOnList()
+        {
+            foreach (Archive archive in Program.archiveList)
+            {
+                if (this.sourceID == archive.sourceID && this.destID == archive.destID)
+                    return true;
+            }
+            return false;
         }
 
       
