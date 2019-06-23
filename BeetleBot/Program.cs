@@ -83,6 +83,7 @@ namespace BeetleBot
                     string s = "";
                     while ((s = sr.ReadLine()) != null)
                     {
+                        Console.WriteLine("Reading: " + s);
                         string[] entries = s.Split('|');
                         if (entries[0].Equals("Archive"))
                         {

@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using BeetleBot.Modules.Archiving;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
@@ -6,61 +7,82 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BeetleBot.Modules
 {
     public class ArchiveCommand : ModuleBase<SocketCommandContext>
     {
+        //TO DO : 1) Make it so that the img links are also saved.(check for max file upload size)
+        //        2) Delete command messages.
         [Command("archive")]
         public async Task PicAsync()
         {
-
-            
+            //==============================Delete Command Message=========================
+            IMessage cmdMsg = await Context.Channel.GetMessageAsync(Context.Message.Id);
+            await cmdMsg.DeleteAsync();
+            //=============================================================================
             IReadOnlyCollection<Discord.Rest.RestMessage> x = await Context.Channel.GetPinnedMessagesAsync();
             //await ReplyAsync("Number of pinned messages in " + Context.Channel.Name + " is " + x.Count.ToString());
-            ulong id = 587398586870792205;
-            var otherchannel = Context.Client.GetChannel(id) as IMessageChannel;
             var cmdUser = Context.User as SocketGuildUser;
-            var role = (cmdUser as IGuildUser).Guild.Roles.FirstOrDefault(curRole => curRole.Name == "Admin");
+            var role = (cmdUser as IGuildUser).Guild.Roles.FirstOrDefault(curRole => curRole.Id == 587350112536100884);
             if (cmdUser.Roles.Contains(role))
-                foreach (Discord.Rest.RestMessage msg in x)
+                foreach (Archive archive in Program.archiveList)
                 {
-                    if (msg.Attachments.Count > 0) //for specifically attachments.
+                    var sourceChan = Context.Client.GetChannel(archive.sourceID) as IMessageChannel;
+                    var destChan = Context.Client.GetChannel(archive.destID) as IMessageChannel;
+
+                    foreach (Discord.Rest.RestMessage msg in x)
                     {
-                        foreach (Attachment at in msg.Attachments)
+                        if (msg.Attachments.Count > 0) //for specifically attachments.
                         {
-                            try
+                            foreach (Attachment at in msg.Attachments)
                             {
-                                string fileName = Path.GetFileName(at.Url);
-                                string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+                                try
+                                {
+                                    string fileName = Path.GetFileName(at.Url);
+                                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
 
-                                SaveFile(at.Url, filePath);
+                                    SaveFile(at.Url, filePath);
 
-                                await otherchannel.SendMessageAsync(at.Filename);
-                                await otherchannel.SendFileAsync(filePath);
-                                File.Delete(filePath);
+                                    await destChan.SendMessageAsync(at.Filename);
+                                    await destChan.SendFileAsync(filePath);
+                                    //File.Delete(filePath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex);
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex);
-                            }
+                            await msg.DeleteAsync();
                         }
-                        await msg.DeleteAsync();
-                    }
 
-                    if (msg.ToString().ToLower().EndsWith(".jpg") || msg.ToString().ToLower().EndsWith(".png") || msg.ToString().ToLower().EndsWith(".jpeg"))
-                    {
-                        //There could potentially be multiple images in one message. This needs to be parsed(most likely with regex)
-                        string fileName = Path.GetFileName(msg.ToString());
-                        string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
-                        await otherchannel.SendMessageAsync(fileName);
-                        await otherchannel.SendMessageAsync(msg.ToString());
-                        await msg.DeleteAsync();
+                        //for url links, not uploads.
+                        //!msg.ToString().Contains(' ') &&
+                        if (msg.ToString().ToLower().EndsWith(".jpg") || msg.ToString().ToLower().EndsWith(".png") || msg.ToString().ToLower().EndsWith(".jpeg"))
+                        {
+                            var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                            foreach (Match m in linkParser.Matches(msg.ToString()))
+                            {
+                                //Console.WriteLine(m.Value);
+                                string fileName = Path.GetFileName(m.Value);
+                                string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+                                using (WebClient client = new WebClient())
+                                    client.DownloadFile(new Uri(m.Value), filePath);
+                                await destChan.SendMessageAsync(fileName);
+                                await destChan.SendMessageAsync(m.Value);
+                            }
+                            await msg.DeleteAsync();
+                            //There could potentially be multiple images in one message. This needs to be parsed(most likely with regex)
+
+                        }
                     }
                 }
             else
                 await ReplyAsync(Context.User.Username + ", you do not have permission to use this command.");
+            //ulong id = 587398586870792205;
+            //var otherchannel = Context.Client.GetChannel(id) as IMessageChannel;
         }
 
         private void SaveFile(string source, string dest)
