@@ -5,7 +5,6 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.IO;
 using BeetleBot.Modules.Archiving;
@@ -17,7 +16,7 @@ namespace BeetleBot
         private DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
-
+        public static List<Archive> archiveList = new List<Archive>();
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -72,6 +71,18 @@ namespace BeetleBot
                 if (!result.IsSuccess)
                     Console.WriteLine(result.ErrorReason);
             }
+        }
+
+        private List<Archive> LoadArchiveConfig()
+        {
+            string dir = Directory.GetCurrentDirectory() + "\\config.conf";
+            if (Directory.Exists(dir))
+            {
+                //NYI
+            }
+            else
+                File.Create(dir);
+            return new List<Archive>();
         }
     }
 }
