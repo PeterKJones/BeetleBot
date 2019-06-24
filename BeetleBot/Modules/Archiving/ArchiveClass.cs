@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml.Serialization;
+﻿using System.IO;
+using System.Linq;
 
 namespace BeetleBot.Modules.Archiving
 {
@@ -46,12 +43,19 @@ namespace BeetleBot.Modules.Archiving
             return 1;
         }
 
-        public void RemoveArchive()
+        public int RemoveArchive()
         {
-            if (Program.archiveList.Contains(this))
-            {
+            if (isOnList())
+            { 
                 Program.archiveList.Remove(this);
+                var tempFile = Path.GetTempFileName();
+                var retainThis = File.ReadLines(Program.configFile).Where(l => l != this.saveString);
+                File.WriteAllLines(tempFile, retainThis);
+                File.Delete(Program.configFile);
+                File.Move(tempFile, Program.configFile);
+                return 0;
             }
+            return 1;
         }
 
         private bool isOnList()
