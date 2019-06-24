@@ -59,30 +59,29 @@ namespace BeetleBot.Modules
                         }
 
                         //for url links, not uploads.
-                        //!msg.ToString().Contains(' ') &&
                         if (msg.ToString().ToLower().EndsWith(".jpg") || msg.ToString().ToLower().EndsWith(".png") || msg.ToString().ToLower().EndsWith(".jpeg"))
                         {
-                            var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                            foreach (Match m in linkParser.Matches(msg.ToString()))
+                            await Task.Run(() =>
                             {
-                                //Console.WriteLine(m.Value);
-                                string fileName = Path.GetFileName(m.Value);
-                                string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
-                                using (WebClient client = new WebClient())
-                                    client.DownloadFile(new Uri(m.Value), filePath);
-                                await destChan.SendMessageAsync(fileName);
-                                await destChan.SendMessageAsync(m.Value);
-                            }
-                            await msg.DeleteAsync();
-                            //There could potentially be multiple images in one message. This needs to be parsed(most likely with regex)
-
+                                var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                                foreach (Match m in linkParser.Matches(msg.ToString()))
+                                {
+                                    string fileName = Path.GetFileName(m.Value);
+                                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+                                    using (WebClient client = new WebClient())
+                                        client.DownloadFile(new Uri(m.Value), filePath);
+                                    //destChan.SendMessageAsync(fileName);
+                                    destChan.SendMessageAsync(m.Value);
+                                    Task.Delay(2000);
+                                }
+                                msg.DeleteAsync();
+                            });
+                            
                         }
                     }
                 }
             else
                 await ReplyAsync(Context.User.Username + ", you do not have permission to use this command.");
-            //ulong id = 587398586870792205;
-            //var otherchannel = Context.Client.GetChannel(id) as IMessageChannel;
         }
 
         private void SaveFile(string source, string dest)
