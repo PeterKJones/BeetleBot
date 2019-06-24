@@ -17,8 +17,7 @@ namespace BeetleBot.Modules.Archiving
         public async Task AddArchiveAsync(ITextChannel sourceChan, ITextChannel destChan)
         {
             //==============================Delete Command Message=========================
-            IMessage cmdMsg = await Context.Channel.GetMessageAsync(Context.Message.Id);
-            await cmdMsg.DeleteAsync();
+            await Context.Message.DeleteAsync();
             //=============================================================================
             Archive archive = new Archive(sourceChan.Name,sourceChan.Id, destChan.Name, destChan.Id);
             int added = archive.AddArchive(); //Using custom method rather than the list add because it checks for more logic.

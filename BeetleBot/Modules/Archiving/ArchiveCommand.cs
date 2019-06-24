@@ -20,8 +20,7 @@ namespace BeetleBot.Modules
         public async Task PicAsync()
         {
             //==============================Delete Command Message=========================
-            IMessage cmdMsg = await Context.Channel.GetMessageAsync(Context.Message.Id);
-            await cmdMsg.DeleteAsync();
+            await Context.Message.DeleteAsync();
             //=============================================================================
             IReadOnlyCollection<Discord.Rest.RestMessage> x = await Context.Channel.GetPinnedMessagesAsync();
             //await ReplyAsync("Number of pinned messages in " + Context.Channel.Name + " is " + x.Count.ToString());
