@@ -8,12 +8,12 @@ namespace BeetleBot.Modules
     public class ClearChat : ModuleBase<SocketCommandContext>
     {
         [Command("clearchat")]
-        public async Task ClearChatAsync()
+        public async Task ClearChatAsync(int clearAmount)
         {
             //==============================Delete Command Message=========================
             await Context.Message.DeleteAsync();
             //=============================================================================
-            IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(100).FlattenAsync();
+            IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(clearAmount).FlattenAsync();
             await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
         }
     }
