@@ -14,8 +14,6 @@ namespace BeetleBot.Modules
 {
     public class ArchiveCommand : ModuleBase<SocketCommandContext>
     {
-        //TO DO : 1) Make it so that the img links are also saved.(check for max file upload size)
-        //        2) Delete command messages.
         [Command("archive")]
         public async Task PicAsync()
         {
@@ -60,7 +58,7 @@ namespace BeetleBot.Modules
                         //for url links, not uploads.
                         if (msg.ToString().ToLower().EndsWith(".jpg") || msg.ToString().ToLower().EndsWith(".png") || msg.ToString().ToLower().EndsWith(".jpeg"))
                         {
-                            await Task.Run(() =>
+                            await Task.Run(async () =>
                             {
                                 var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                                 foreach (Match m in linkParser.Matches(msg.ToString()))
@@ -70,10 +68,9 @@ namespace BeetleBot.Modules
                                     using (WebClient client = new WebClient())
                                         client.DownloadFile(new Uri(m.Value), filePath);
                                     //destChan.SendMessageAsync(fileName);
-                                    destChan.SendMessageAsync(m.Value);
-                                    Task.Delay(2000);
+                                    await destChan.SendMessageAsync(m.Value);
                                 }
-                                msg.DeleteAsync();
+                                await msg.DeleteAsync();
                             });
                             
                         }
