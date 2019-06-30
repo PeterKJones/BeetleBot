@@ -13,13 +13,16 @@ namespace BeetleBot
 {
     public class Program
     {
+        //TO DO:
+        //Need to make sure directories exist if the bot is up for more than 24 hours because the days and even months can change if uptime is very long.
+        //Change the order in which logged messages come in.
         private static DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
-
+        //=================================Folders=========================================
+        private static string contentFolder = Directory.GetCurrentDirectory() + "\\content\\Content_" + DateTime.Today.ToString("MMMM_yyyy") + "\\";
         //=================================Files===========================================
         public static string configFile = Directory.GetCurrentDirectory() + "\\config.conf";
-        private static string logFile = Directory.GetCurrentDirectory() + "\\log\\Log_" + DateTime.Today.ToString("MMddyyyy") + ".log";
         //=================================================================================
 
         public static List<Archive> archiveList = new List<Archive>();
@@ -37,12 +40,7 @@ namespace BeetleBot
                 .BuildServiceProvider();
 
             string botToken = "NTg3MTY0NjI0MTUyMDM1Mzc1.XP1dBg.95bdsohUdxW9OiL65ffitq1ovPg";
-
-            //Create log directory if it does not exist
-            if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\log\\"))
-                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\log\\");
-
-            //event subscriptions
+            
             client.Log += Log;
             LoadArchiveConfig();
             await RegisterCommandsAsync();
@@ -59,8 +57,11 @@ namespace BeetleBot
         }
 
         public static void SendLog(SocketUser commandUser, string operationName, IMessage rawMsg) //My Logging
-        { //[6/29/2019 05:50AM UTC+7] ClearChat Operation | [6/28/2019 03:50AM UTC+7] Beetle(Beetlebomb#7123): hi
-            
+        { 
+            if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\log\\")) //create root log directory if it doesn't exist
+                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\log\\");
+
+            string logFile = Directory.GetCurrentDirectory() + "\\log\\Log_" + DateTime.Today.ToString("MMddyyyy") + ".log"; //daily log file name
 
             if (rawMsg.Content.Length > 0) //if there is text.
             {
