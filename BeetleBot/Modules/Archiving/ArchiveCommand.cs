@@ -101,13 +101,13 @@ namespace BeetleBot.Modules
             if (File.Exists(dest))
             {
                 var count = 2;
-                string fullFilePath = Path.GetFileNameWithoutExtension(dest) + '_' + count + Path.GetExtension(dest);
-                while (File.Exists(fullFilePath))
+                string fileName = Path.GetFileNameWithoutExtension(dest) + '_' + count + Path.GetExtension(dest);
+                while (File.Exists(Path.GetDirectoryName(dest) + fileName))
                 {
                     count++;
-                    fullFilePath = Path.GetFileNameWithoutExtension(dest) + '_' + count + Path.GetExtension(dest);
+                    fileName = Path.GetFileNameWithoutExtension(dest) + '_' + count + Path.GetExtension(dest);
                 }
-                saveFile.DownloadFile(source, fullFilePath);
+                saveFile.DownloadFile(source, Path.GetDirectoryName(dest) + "\\" + fileName);
             }
             else
                 saveFile.DownloadFile(source, dest);
