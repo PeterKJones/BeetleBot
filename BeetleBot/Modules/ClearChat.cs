@@ -17,8 +17,7 @@ namespace BeetleBot.Modules
                 //==============================Delete Command Message=========================
                 await Context.Message.DeleteAsync();
                 //=============================================================================
-
-
+                
                 IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(clearAmount).FlattenAsync();
                 foreach (IMessage msg in messages)
                 {

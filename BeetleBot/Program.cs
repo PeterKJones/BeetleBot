@@ -16,9 +16,13 @@ namespace BeetleBot
         private static DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
-        public static List<Archive> archiveList = new List<Archive>();
+
+        //=================================Files===========================================
         public static string configFile = Directory.GetCurrentDirectory() + "\\config.conf";
-        private static string logFile = Directory.GetCurrentDirectory() + "\\log.log";
+        private static string logFile = Directory.GetCurrentDirectory() + "\\log\\Log_" + DateTime.Today.ToString("MMddyyyy") + ".log";
+        //=================================================================================
+
+        public static List<Archive> archiveList = new List<Archive>();
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -33,8 +37,11 @@ namespace BeetleBot
                 .BuildServiceProvider();
 
             string botToken = "NTg3MTY0NjI0MTUyMDM1Mzc1.XP1dBg.95bdsohUdxW9OiL65ffitq1ovPg";
-            
-            
+
+            //Create log directory if it does not exist
+            if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\log\\"))
+                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\log\\");
+
             //event subscriptions
             client.Log += Log;
             LoadArchiveConfig();
