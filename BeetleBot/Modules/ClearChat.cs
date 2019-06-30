@@ -2,6 +2,7 @@
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BeetleBot.Modules
@@ -18,11 +19,10 @@ namespace BeetleBot.Modules
                 await Context.Message.DeleteAsync();
                 //=============================================================================
                 
-                IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(clearAmount).FlattenAsync();
-                foreach (IMessage msg in messages)
-                {
-                    Program.SendLog(Context.User,"ClearChat", msg);
-                }
+                var messages = await Context.Channel.GetMessagesAsync(clearAmount).FlattenAsync();
+                var reversed = messages.Reverse();
+                foreach (IMessage msg in reversed)
+                    Program.SendLog(Context.User, "ClearChat", msg);
                 await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
             }
             

@@ -45,13 +45,11 @@ namespace BeetleBot
 
             string botToken = "NTg3MTY0NjI0MTUyMDM1Mzc1.XP1dBg.95bdsohUdxW9OiL65ffitq1ovPg";
 
-
+            //=====Load Events========
             client.Log += Log;
             client.Ready += LoadConfig;
-            //foreach (string s in allowedRolesList)
-            //{
-            //    Console.WriteLine("Role added: " + s);
-            //}
+            //========================
+
             await RegisterCommandsAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
@@ -144,21 +142,13 @@ namespace BeetleBot
                                     {
                                         if (socketRole.Name.ToLower().Equals(s2.ToLower()))
                                         {
-                                            Console.WriteLine("socketRole.Name.ToLower() matches!");
                                             allowedRolesList.Add(socketRole);
                                         }
                                     }
-                                    //allowedRolesList.Add(s2);
                                 }
                                 break;
 
                         }
-
-                        //if (entries[0].Equals("Archive"))
-                        //{
-                        //    Archive archive = new Archive(entries[1], ulong.Parse(entries[2]), entries[3], ulong.Parse(entries[4]));
-                        //    archive.AddArchive();
-                        //}
                     }
                 }
             else
@@ -167,6 +157,19 @@ namespace BeetleBot
                     sw.WriteLine("Beetlebot Configuration File - Date: " + DateTime.Now.ToString("dddd, dd MMMM yyyy hh:mm:sstt"));
             }
             return Task.CompletedTask;
+        }
+        public static bool hasPermissions(SocketGuildUser socketUser)
+        {
+            var roles = socketUser.Roles;
+            foreach (SocketRole socket in roles)
+            {
+                foreach (IRole role in allowedRolesList)
+                {
+                    if (socket.Name == role.Name)
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }

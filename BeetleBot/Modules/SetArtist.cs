@@ -12,25 +12,19 @@ namespace BeetleBot.Modules
         [Command("setartist")]
         public async Task SetArtistAsync(string arg)
         {
-            var mentionedUsers = Context.Message.MentionedUsers;
-            bool canChange = false;
-            SocketGuildUser user;
-            using (IEnumerator<SocketUser> iterator = mentionedUsers.GetEnumerator())
+            if (Program.hasPermissions(Context.Guild.GetUser(Context.User.Id)))
             {
-                iterator.MoveNext();
-                user = Context.Guild.GetUser(iterator.Current.Id);
-                //await ReplyAsync("Username of user attempting command: " + user.Username);
-                //await ReplyAsync("Nickname of user attempting command: " + user.Nickname);
-            }
-            canChange = Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageNicknames;
-            //await ReplyAsync("Permission check for ManageNicknames: " + canChange);
-            //==============================Delete Command Message=========================
-            await Context.Message.DeleteAsync();
-            //=============================================================================
-        
-            if (user == null) return;
-            if (canChange)
-            {
+                var mentionedUsers = Context.Message.MentionedUsers;
+                SocketGuildUser user;
+                using (IEnumerator<SocketUser> iterator = mentionedUsers.GetEnumerator())
+                {
+                    iterator.MoveNext();
+                    user = Context.Guild.GetUser(iterator.Current.Id);
+                }
+                //==============================Delete Command Message=========================
+                await Context.Message.DeleteAsync();
+                //=============================================================================
+                if (user == null) return;
                 await user.ModifyAsync(x =>
                 {
                     if (user.Nickname == null && user.Username.Length <= 23)
@@ -43,12 +37,11 @@ namespace BeetleBot.Modules
                             x.Nickname = "[Artist] " + user.Nickname;
                         else
                             ReplyAsync(user.Nickname + "has too many characters in their name. Please change manually to less than 24 characters and try again.");
-                    } 
+                    }
                 });
             }
             else
                 await ReplyAsync(Context.User.Mention + ", you do not have permission to change nicknames.");
-            
         }
     }
 }
