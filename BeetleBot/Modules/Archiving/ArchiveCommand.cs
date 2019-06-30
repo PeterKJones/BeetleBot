@@ -43,7 +43,7 @@ namespace BeetleBot.Modules
 
                                     SaveFile(at.Url, filePath);
 
-                                    await destChan.SendMessageAsync(at.Filename);
+                                    //await destChan.SendMessageAsync(at.Filename);
                                     await destChan.SendFileAsync(filePath);
                                     //File.Delete(filePath);
                                 }
@@ -83,7 +83,20 @@ namespace BeetleBot.Modules
         private void SaveFile(string source, string dest)
         {
             WebClient saveFile = new WebClient();
-            saveFile.DownloadFile(source, dest);
+
+            if (File.Exists(dest))
+            {
+                var count = 2;
+                string fullFilePath = Path.GetDirectoryName(dest) + Path.GetFileNameWithoutExtension(dest) + '_' + count + Path.GetExtension(dest);
+                while (File.Exists(fullFilePath))
+                {
+                    count++;
+                    fullFilePath = Path.GetDirectoryName(dest) + Path.GetFileNameWithoutExtension(dest) + '_' + count + Path.GetExtension(dest);
+                }
+                saveFile.DownloadFile(source, fullFilePath);
+            }
+            else
+                saveFile.DownloadFile(source, dest);
         }
     }
 }
