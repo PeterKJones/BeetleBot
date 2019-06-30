@@ -28,6 +28,8 @@ namespace BeetleBot
         //=================================================================================
 
         public static List<Archive> archiveList = new List<Archive>();
+        public static List<IRole> allowedRolesList = new List<IRole>();
+        private ulong guildID = 587349550151368733;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -42,9 +44,14 @@ namespace BeetleBot
                 .BuildServiceProvider();
 
             string botToken = "NTg3MTY0NjI0MTUyMDM1Mzc1.XP1dBg.95bdsohUdxW9OiL65ffitq1ovPg";
-            
+
+
             client.Log += Log;
-            LoadArchiveConfig();
+            client.Ready += LoadConfig;
+            //foreach (string s in allowedRolesList)
+            //{
+            //    Console.WriteLine("Role added: " + s);
+            //}
             await RegisterCommandsAsync();
             await client.LoginAsync(TokenType.Bot, botToken);
             await client.StartAsync();
@@ -57,7 +64,6 @@ namespace BeetleBot
             Console.WriteLine(arg);
             return Task.CompletedTask;
         }
-
         public static void SendLog(SocketUser commandUser, string operationName, IMessage rawMsg) //My Logging
         { 
             if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\log\\")) //create root log directory if it doesn't exist
@@ -90,13 +96,11 @@ namespace BeetleBot
                 }
             }
         }
-
         public async Task RegisterCommandsAsync()
         {
             client.MessageReceived += HandleCommandAsync;
             await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
         }
-
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             var message = arg as SocketUserMessage;
@@ -115,8 +119,7 @@ namespace BeetleBot
                     Console.WriteLine(result.ErrorReason);
             }
         }
-
-        private void LoadArchiveConfig()
+        private Task LoadConfig()
         {
             if (File.Exists(configFile))
                 using (StreamReader sr = File.OpenText(configFile))
@@ -126,11 +129,36 @@ namespace BeetleBot
                     {
                         Console.WriteLine("Reading: " + s);
                         string[] entries = s.Split('|');
-                        if (entries[0].Equals("Archive"))
+                        switch (entries[0].ToLower())
                         {
-                            Archive archive = new Archive(entries[1], ulong.Parse(entries[2]), entries[3], ulong.Parse(entries[4]));
-                            archive.AddArchive();
+                            case "archive":
+                                Archive archive = new Archive(entries[1], ulong.Parse(entries[2]), entries[3], ulong.Parse(entries[4]));
+                                archive.AddArchive();
+                                break;
+                            case "allowedroles":
+                                string[] roles = entries[1].Split(',');
+                                var guildRoles = client.GetGuild(guildID).Roles;
+                                foreach (string s2 in roles)
+                                {
+                                    foreach (SocketRole socketRole in guildRoles)
+                                    {
+                                        if (socketRole.Name.ToLower().Equals(s2.ToLower()))
+                                        {
+                                            Console.WriteLine("socketRole.Name.ToLower() matches!");
+                                            allowedRolesList.Add(socketRole);
+                                        }
+                                    }
+                                    //allowedRolesList.Add(s2);
+                                }
+                                break;
+
                         }
+
+                        //if (entries[0].Equals("Archive"))
+                        //{
+                        //    Archive archive = new Archive(entries[1], ulong.Parse(entries[2]), entries[3], ulong.Parse(entries[4]));
+                        //    archive.AddArchive();
+                        //}
                     }
                 }
             else
@@ -138,6 +166,7 @@ namespace BeetleBot
                 using (StreamWriter sw = new StreamWriter(configFile))
                     sw.WriteLine("Beetlebot Configuration File - Date: " + DateTime.Now.ToString("dddd, dd MMMM yyyy hh:mm:sstt"));
             }
+            return Task.CompletedTask;
         }
     }
 }
