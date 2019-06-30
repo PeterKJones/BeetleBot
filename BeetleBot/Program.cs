@@ -13,11 +13,16 @@ namespace BeetleBot
 {
     public class Program
     {
-        private DiscordSocketClient client;
+        private static DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
-        public static List<Archive> archiveList = new List<Archive>();
+
+        //=================================Files===========================================
         public static string configFile = Directory.GetCurrentDirectory() + "\\config.conf";
+        private static string logFile = Directory.GetCurrentDirectory() + "\\log\\Log_" + DateTime.Today.ToString("MMddyyyy") + ".log";
+        //=================================================================================
+
+        public static List<Archive> archiveList = new List<Archive>();
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -32,8 +37,11 @@ namespace BeetleBot
                 .BuildServiceProvider();
 
             string botToken = "NTg3MTY0NjI0MTUyMDM1Mzc1.XP1dBg.95bdsohUdxW9OiL65ffitq1ovPg";
-            
-            
+
+            //Create log directory if it does not exist
+            if (!Directory.Exists(Directory.GetCurrentDirectory() + "\\log\\"))
+                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\log\\");
+
             //event subscriptions
             client.Log += Log;
             LoadArchiveConfig();
@@ -44,10 +52,40 @@ namespace BeetleBot
             await Task.Delay(-1);
         }
 
-        private Task Log(LogMessage arg)
+        private Task Log(LogMessage arg) //Discord's log
         {
             Console.WriteLine(arg);
             return Task.CompletedTask;
+        }
+
+        public static void SendLog(SocketUser commandUser, string operationName, IMessage rawMsg) //My Logging
+        { //[6/29/2019 05:50AM UTC+7] ClearChat Operation | [6/28/2019 03:50AM UTC+7] Beetle(Beetlebomb#7123): hi
+            
+
+            if (rawMsg.Content.Length > 0) //if there is text.
+            {
+                string msg = DateTime.Now.ToString("[MM/dd/yyy hh:mm:sstt UTCz] ") + operationName + " Operation executed by " + commandUser.Username + " | [" + rawMsg.Timestamp.ToLocalTime() + "] " + rawMsg.Author + '(' + rawMsg.Author.Username + "): " + rawMsg;
+                using (StreamWriter sw = File.AppendText(logFile))
+                    sw.WriteLine(msg);
+            }
+
+            if (rawMsg.Attachments.Count > 0) //If there is an attachment
+            {
+                string msg = DateTime.Now.ToString("[MM/dd/yyy hh:mm:sstt UTCz] ") + operationName + " Operation executed by " + commandUser.Username + " | [" + rawMsg.Timestamp.ToLocalTime() + "] " + rawMsg.Author + '(' + rawMsg.Author.Username + ") had one or more attachments deleted.";
+                using (StreamWriter sw = File.AppendText(logFile))
+                    sw.WriteLine(msg);
+            }
+
+            if (rawMsg.MentionedUserIds.Count > 0) //If there is a mentioned user
+            {
+                foreach (ulong id in rawMsg.MentionedUserIds)
+                {
+                    SocketUser user = client.GetUser(id);
+                    string msg = DateTime.Now.ToString("[MM/dd/yyy hh:mm:sstt UTCz] ") + operationName + " Operation executed by " + commandUser.Username + " | [" + rawMsg.Timestamp.ToLocalTime() + "] " + rawMsg.Author + '(' + rawMsg.Author.Username + ") mentioned " + user.Username;
+                    using (StreamWriter sw = File.AppendText(logFile))
+                        sw.WriteLine(msg);
+                }
+            }
         }
 
         public async Task RegisterCommandsAsync()
