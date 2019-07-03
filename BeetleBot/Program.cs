@@ -15,9 +15,9 @@ namespace BeetleBot
     {
         //TO DO:
         //Need to make sure directories exist if the bot is up for more than 24 hours because the days and even months can change if uptime is very long.
-        //Change the order in which logged messages come in.
         //Make it so that the archive command will not allow a channel to be archived in more than one location.
         //Make sure the setartist role has the ability to set the mentioned user's nickname. If it's the owner, for example, that will not work.
+        //Make a move command for user content that was placed in the wrong channel.
         private static DiscordSocketClient client;
         private CommandService commands;
         private IServiceProvider services;
