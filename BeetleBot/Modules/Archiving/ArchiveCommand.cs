@@ -15,12 +15,13 @@ namespace BeetleBot.Modules
     public class ArchiveCommand : ModuleBase<SocketCommandContext>
     {
         [Command("archive")]
-        public async Task PicAsync()
+        public async Task PicAsync()//int amount = -1
         {
             //==============================Delete Command Message=========================
             await Context.Message.DeleteAsync();
             //=============================================================================
-            IReadOnlyCollection<Discord.Rest.RestMessage> x = await Context.Channel.GetPinnedMessagesAsync();
+            IReadOnlyCollection<Discord.Rest.RestMessage> temp = await Context.Channel.GetPinnedMessagesAsync();
+            var msgs = temp.Reverse();
             var cmdUser = Context.User as SocketGuildUser;
             var role = (cmdUser as IGuildUser).Guild.Roles.FirstOrDefault(curRole => curRole.Id == 587350112536100884);
             if (cmdUser.Roles.Contains(role))
@@ -42,7 +43,7 @@ namespace BeetleBot.Modules
                             Directory.CreateDirectory(monthDir);
                         //=================================================================
 
-                        foreach (Discord.Rest.RestMessage msg in x)
+                        foreach (Discord.Rest.RestMessage msg in msgs)
                         {
                             if (msg.Attachments.Count > 0) //for specifically attachments.
                             {
