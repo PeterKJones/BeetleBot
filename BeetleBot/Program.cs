@@ -14,6 +14,10 @@ namespace BeetleBot
     public class Program
     {
         //TO DO:
+        //======problems====
+        //make sure archiving takes gifs into account. also links from gyfcat
+        //if archiving doesn't recognize a pinned message, leave it alone.
+        //==================
         //Need to make sure directories exist if the bot is up for more than 24 hours because the days and even months can change if uptime is very long.
         //Make it so that the archive command will not allow a channel to be archived in more than one location.
         //Make sure the setartist role has the ability to set the mentioned user's nickname. If it's the owner, for example, that will not work.
